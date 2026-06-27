@@ -1,7 +1,7 @@
 import { useState } from "react"
 
 import API from "@/api/axios"
-
+import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 
@@ -21,7 +21,7 @@ const [file,setFile] = useState(null)
 const [job,setJob] = useState("")
 
 const [loading,setLoading] = useState(false)
-
+const navigate = useNavigate()
 
 
 const analyze = async()=>{
@@ -53,47 +53,85 @@ job
 
 
 
-try{
+try {
 
+    setLoading(true)
 
-setLoading(true)
+    const res = await API.post(
 
+        "/resume/match-job",
 
-const res = await API.post(
+        formData
 
-"/resume/match-job",
+    )
 
-formData
-
-)
-
-
-
-
-window.location.href = `/report/${res.data.report_id}`
-
+    navigate(`/report/${res.data.report_id}`)
 
 }
+catch (error) {
 
-catch(error){
+    alert(
 
+        error.response?.data?.detail ||
 
-alert(
-error.response?.data?.detail || 
-"Analysis failed"
-)
+        "Analysis failed"
 
+    )
 
 }
+finally {
 
+    setLoading(false)
 
-setLoading(false)
-
-
+}
 }
 
 
 
+
+if (loading) {
+
+    return (
+
+        <div className="min-h-screen flex flex-col justify-center items-center bg-white">
+
+            <div className="animate-spin rounded-full h-20 w-20 border-b-4 border-black"></div>
+
+            <h1 className="text-4xl font-bold mt-8">
+
+                AI Resume Assistant
+
+            </h1>
+
+            <p className="text-gray-500 mt-4">
+
+                Analyzing your resume...
+
+            </p>
+
+            <div className="w-96 h-3 bg-gray-200 rounded-full mt-8 overflow-hidden">
+
+                <div className="h-full w-full bg-black animate-pulse"></div>
+
+            </div>
+
+            <div className="mt-10 space-y-2 text-center">
+
+                <p>📄 Extracting Resume</p>
+
+                <p>🤖 Matching Job Description</p>
+
+                <p>📊 Calculating ATS Score</p>
+
+                <p>💡 Generating Suggestions</p>
+
+            </div>
+
+        </div>
+
+    )
+
+}
 
 return(
 

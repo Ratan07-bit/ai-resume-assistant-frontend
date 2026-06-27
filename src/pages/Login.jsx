@@ -41,14 +41,21 @@ form
 
 
 localStorage.setItem(
-"token",
-res.data.access_token
+    "token",
+    res.data.access_token
 )
 
+const pending = sessionStorage.getItem("pendingAnalysis")
 
-navigate("/dashboard")
+if (pending === "true") {
 
+    navigate("/analyze")
 
+} else {
+
+    navigate("/dashboard")
+
+}
 }
 
 catch(error){

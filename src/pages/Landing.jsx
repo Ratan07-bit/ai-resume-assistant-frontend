@@ -2,6 +2,9 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import Navbar from "@/components/ui/landing/Navbar"
 import { Textarea } from "@/components/ui/textarea"
+import Stats from "@/components/ui/landing/Stats"
+import BuiltFor from "@/components/ui/landing/BuiltFor"
+import UploadDropzone from "@/components/ui/landing/UploadDropzone"
 import {
     Card,
     CardHeader,
@@ -30,15 +33,17 @@ const analyze = () => {
 
         return
     }
-
-    // Save temporarily
+    
 
     sessionStorage.setItem("job_description", job)
 
-    // We cannot save a File object,
-    // so we'll upload it after login.
+// tell Login page user came from analysis
+sessionStorage.setItem("pendingAnalysis", "true")
 
-    navigate("/login")
+// temporarily keep the selected file
+window.selectedResume = file
+
+navigate("/login")
 }
   return (
     <>
@@ -59,11 +64,22 @@ const analyze = () => {
           improvement suggestions.
         </p>
 
-        <Button className="mt-10 px-10 py-6 text-lg">
-          Get Started
-        </Button>
+        <Button
+    className="mt-10 px-10 py-6 text-lg"
+    onClick={() => {
+    document
+        .getElementById("upload-section")
+        ?.scrollIntoView({
+            behavior: "smooth"
+        })
+}}
+>
+    Get Started
+</Button>
 
       </section>
+
+    
 
       <section
     id="upload-section"
@@ -84,10 +100,9 @@ Try AI Resume Analysis
 
 <CardContent className="space-y-5">
 
-<input
-type="file"
-accept=".pdf"
-onChange={(e)=>setFile(e.target.files[0])}
+<UploadDropzone
+    file={file}
+    setFile={setFile}
 />
 
 <Textarea
@@ -111,6 +126,10 @@ Analyze Resume
 </Card>
 
 </section>
+
+ <Stats />
+
+<BuiltFor />
 
       {/* Features */}
       <section

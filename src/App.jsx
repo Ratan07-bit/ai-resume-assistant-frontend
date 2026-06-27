@@ -7,7 +7,7 @@ import Register from "./pages/Register"
 import Dashboard from "./pages/Dashboard"
 import Analyze from "./pages/Analyze"
 import Report from "./pages/Report"
-
+import Loading from "./pages/Loading"
 
 
 function App() {
@@ -59,6 +59,11 @@ function App() {
         <Route
  path="/history"
  element={<History/>}
+/>
+
+<Route
+    path="/loading"
+    element={<Loading />}
 />
 
 
