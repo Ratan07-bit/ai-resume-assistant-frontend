@@ -5,7 +5,7 @@ import {
  Card,
  CardContent
 } from "@/components/ui/card"
-
+import API from "@/api/axios"
 
 function History(){
 
@@ -17,32 +17,23 @@ const navigate = useNavigate()
 
 
 
-useEffect(()=>{
+useEffect(() => {
 
+    API.get("/resume/history")
 
-fetch(
-"http://127.0.0.1:8000/resume/history",
-{
-headers:{
+        .then((res) => {
 
-Authorization:
-`Bearer ${localStorage.getItem("token")}`
+            setReports(res.data)
 
-}
-}
-)
+        })
 
-.then(res=>res.json())
+        .catch((err) => {
 
-.then(data=>{
+            console.log(err)
 
-setReports(data)
+        })
 
-})
-
-
-},[])
-
+}, [])
 
 
 

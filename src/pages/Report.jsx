@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card"
 
 import { Badge } from "@/components/ui/badge"
-
+import API from "@/api/axios"
 import { Progress } from "@/components/ui/progress"
 
 
@@ -22,24 +22,23 @@ const { id } = useParams()
 
 
 
-useEffect(()=>{
-     fetch(
-        `http://127.0.0.1:8000/resume/report/${id}`,
-        {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`
-            }
-        }
-    )
-    .then(res => res.json())
-    .then(data => {
+useEffect(() => {
 
-        setReport(data.analysis)
+    API.get(`/resume/report/${id}`)
 
-    })
+        .then((res) => {
+
+            setReport(res.data.analysis)
+
+        })
+
+        .catch((err) => {
+
+            console.log(err)
+
+        })
 
 }, [id])
-
 
 
 if(!report){
