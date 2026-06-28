@@ -2,7 +2,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 
 import API from "@/api/axios"
-
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
@@ -44,25 +44,24 @@ localStorage.setItem(
     "token",
     res.data.access_token
 )
+toast.success("Login successful!")
 
 const pending = sessionStorage.getItem("pendingAnalysis")
 
 if (pending === "true") {
 
-    navigate("/analyze")
+    navigate("/analyze", { replace: true })
 
 } else {
 
-    navigate("/dashboard")
+    navigate("/dashboard", { replace: true })
 
 }
 }
 
-catch(error){
+catch {
 
-alert(
-"Invalid login details"
-)
+    toast.error("Invalid email or password")
 
 }
 

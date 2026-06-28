@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-
+import { toast } from "sonner"
 import API from "@/api/axios"
 
 import { Button } from "@/components/ui/button"
@@ -29,20 +29,29 @@ const [form,setForm] = useState({
 })
 
 
-const submit = async()=>{
+const submit = async () => {
 
+    try {
 
- const res = await API.post(
-   "/auth/register",
-   form
- )
+        const res = await API.post(
+            "/auth/register",
+            form
+        )
 
+        toast.success(
+            res.data.message || "Registration successful!"
+        )
 
- alert(res.data.message)
+        navigate("/login")
 
+    } catch (error) {
 
- navigate("/login")
+        toast.error(
+            error.response?.data?.detail ||
+            "Registration failed"
+        )
 
+    }
 
 }
 

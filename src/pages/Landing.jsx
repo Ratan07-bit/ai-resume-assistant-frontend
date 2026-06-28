@@ -12,10 +12,11 @@ import {
     CardContent
 } from "@/components/ui/card"
 
-
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 
 import { FileText, Brain, BarChart3 } from "lucide-react"
+import API from "@/api/axios"
 
 function Landing() {
 
@@ -25,25 +26,54 @@ const [file, setFile] = useState(null)
 
 const [job, setJob] = useState("")
 
-const analyze = () => {
+const analyze = async () => {
 
     if (!file || !job) {
 
-        alert("Please upload your resume and enter a job description.")
+        toast.warning("Please upload your resume and enter a job description.")
 
         return
     }
-    
 
-    sessionStorage.setItem("job_description", job)
+    try {
 
-// tell Login page user came from analysis
-sessionStorage.setItem("pendingAnalysis", "true")
+        const formData = new FormData()
 
-// temporarily keep the selected file
-window.selectedResume = file
+        formData.append("file", file)
 
-navigate("/login")
+        const res = await API.post(
+            "/resume/upload",
+            formData
+        )
+
+        sessionStorage.setItem(
+            "object_key",
+            res.data.object_key
+        )
+
+        sessionStorage.setItem(
+            "job_description",
+            job
+        )
+
+        sessionStorage.setItem(
+            "pendingAnalysis",
+            "true"
+        )
+
+        navigate("/login")
+        toast.success("Resume uploaded successfully.")
+
+    }
+    catch (error) {
+
+        toast.error(
+    error.response?.data?.detail ||
+    "Resume upload failed"
+)
+
+    }
+
 }
   return (
     <>

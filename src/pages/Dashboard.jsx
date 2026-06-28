@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom"
 
 import { Button } from "@/components/ui/button"
-
+import { toast } from "sonner"
 import {
  Card,
  CardContent,
@@ -25,16 +25,15 @@ const navigate = useNavigate()
 
 
 
-const logout = ()=>{
+const logout = () => {
 
+    localStorage.removeItem("token")
 
-localStorage.removeItem(
-"token"
-)
+    sessionStorage.clear()
 
+    toast.success("Logged out successfully.")
 
-navigate("/login")
-
+    navigate("/login", { replace: true })
 
 }
 

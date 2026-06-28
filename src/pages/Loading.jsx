@@ -17,28 +17,29 @@ function Loading() {
 
     useEffect(() => {
 
-        const interval = setInterval(() => {
+    const interval = setInterval(() => {
 
-            setStep((prev) => {
+        setStep((prev) => {
 
-                if (prev === steps.length - 1) {
+            if (prev === steps.length - 1) {
 
-                    clearInterval(interval)
+                clearInterval(interval)
 
-                    navigate("/report/latest")
+                navigate("/report/latest")
 
-                    return prev
-                }
+                return prev
 
-                return prev + 1
+            }
 
-            })
+            return prev + 1
 
-        }, 900)
+        })
 
-        return () => clearInterval(interval)
+    }, 900)
 
-    }, [])
+    return () => clearInterval(interval)
+
+}, [navigate])
 
     return (
 
