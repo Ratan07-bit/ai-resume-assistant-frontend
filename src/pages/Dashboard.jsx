@@ -13,6 +13,7 @@ import {
  FileText,
  History,
  Brain,
+ WandSparkles,
  LogOut
 } from "lucide-react"
 
@@ -148,32 +149,28 @@ View your ATS history
 
 
 
-
-
-<Card className="cursor-pointer hover:shadow-lg">
-
+<Card
+className="cursor-pointer hover:shadow-lg"
+onClick={() => navigate("/improve-resume")}
+>
 
 <CardHeader>
 
-<FileText size={40}/>
-
+<WandSparkles size={40} />
 
 <CardTitle>
 
-AI Suggestions
+Improve Resume
 
 </CardTitle>
 
-
 </CardHeader>
-
 
 <CardContent>
 
-Improve skills and resume keywords
+Upload your resume, compare it with a job description, improve it using AI, and edit it before downloading.
 
 </CardContent>
-
 
 </Card>
 

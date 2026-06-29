@@ -7,7 +7,8 @@ import Register from "./pages/Register"
 import Dashboard from "./pages/Dashboard"
 import Analyze from "./pages/Analyze"
 import Report from "./pages/Report"
-
+import ResumeEditor from "./pages/ResumeEditor"
+import ImproveResume from "./pages/ImproveResume"
 
 
 function App() {
@@ -75,7 +76,14 @@ function App() {
         </ProtectedRoute>
     }
 />
-
+<Route
+    path="/improve-resume"
+    element={<ImproveResume />}
+/>
+<Route
+    path="/resume-editor/:id"
+    element={<ResumeEditor />}
+/>
 
 
 
