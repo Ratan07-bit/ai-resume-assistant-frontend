@@ -35,6 +35,9 @@ function ResumeEditor() {
 
     const [aiSuggestions, setAiSuggestions] = useState([])
 
+    const [saveStatus, setSaveStatus] = useState("Saved")
+const [saveTimeout, setSaveTimeout] = useState(null)
+
 const [aiLoading, setAiLoading] = useState(false)
 const [hasGeneratedSuggestions, setHasGeneratedSuggestions] = useState(false)
 
@@ -47,6 +50,7 @@ const generateSuggestions = async () => {
         const res = await API.post(
             "/resume/ai-suggest",
             {
+                improvement_id: Number(id),
                 resume,
                 job_description: report.job_description
             }
@@ -70,28 +74,38 @@ const generateSuggestions = async () => {
 
 }
 
+   useEffect(() => {
 
-    useEffect(() => {
+    API.get(`/resume/improvement/${id}`)
+        .then((res) => {
 
-        API.get(`/resume/improvement/${id}`)
+            setReport(res.data)
 
-            .then(res => {
+            setResume(res.data.improved_resume)
 
-                setReport(res.data)
+            setAiSuggestions(
+                res.data.ai_suggestions || []
+            )
 
-                setResume(
-                    res.data.improved_resume
-                )
+            setHasGeneratedSuggestions(
+                res.data.has_generated_suggestions || false
+            )
 
-            })
+        })
+        .catch((err) => {
 
-            .finally(() => {
+            console.error(err)
 
-                setLoading(false)
+            toast.error("Unable to load resume.")
 
-            })
+        })
+        .finally(() => {
 
-    }, [id])
+            setLoading(false)
+
+        })
+
+}, [id])
 
 
     if (loading) {
@@ -107,7 +121,54 @@ const generateSuggestions = async () => {
         )
 
     }
-const applySuggestion = (item) => {
+
+const autoSaveResume = async (updatedResume) => {
+
+    try {
+
+        setSaveStatus("Saving...")
+
+        // Save resume
+        await API.put(
+            `/resume/improvement/${id}`,
+            {
+                improved_resume: updatedResume
+            }
+        )
+
+        // Recalculate ATS
+        const recalculate = await API.post(
+            `/resume/recalculate/${id}`
+        )
+
+        // Update left panel immediately
+        setReport(prev => ({
+            ...prev,
+
+            ats_score: recalculate.data.ats_score,
+
+            matched_skills: recalculate.data.matched_skills,
+
+            missing_skills: recalculate.data.missing_skills,
+
+            additional_skills: recalculate.data.additional_skills,
+
+            suggestions: recalculate.data.suggestions
+        }))
+
+        setSaveStatus("Saved ✓")
+
+    } catch (error) {
+
+        console.error(error)
+
+        setSaveStatus("Save Failed")
+
+    }
+
+}
+
+const applySuggestion = async (item) => {
 
     const section = item.section.trim()
 
@@ -116,28 +177,38 @@ const applySuggestion = (item) => {
         "i"
     )
 
-    const newSection =
-
-`${section}
+    const newSection = `${section}
 
 ${item.improved}
 `
 
-    setResume(prev =>
+    const updatedResume = resume.replace(regex, newSection)
 
-        prev.replace(regex, newSection)
+    try {
 
-    )
+        // Update UI immediately
+        setResume(updatedResume)
 
-    setHasGeneratedSuggestions(false)
+        // Save into database
+       await autoSaveResume(updatedResume)
 
-    toast.success("Section updated!")
+        setHasGeneratedSuggestions(false)
+
+        toast.success("Resume updated successfully!")
+
+    } catch (error) {
+
+        console.error(error)
+
+        toast.error("Unable to save resume.")
+
+    }
 
 }
 
     return (
 
-        <div className="p-10 bg-gray-50 min-h-screen">
+        <div className="min-h-screen bg-slate-50 px-6 py-8 lg:px-10">
 
             <h1 className="text-4xl font-bold mb-10">
 
@@ -146,12 +217,12 @@ ${item.improved}
             </h1>
 
 
-            <div className="grid grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
 
                 {/* Left Side */}
 
-                <div className="space-y-6">
+                <div className="space-y-6 lg:sticky lg:top-6 self-start">
 
 
                     <Card>
@@ -166,7 +237,7 @@ ${item.improved}
 
                         </CardHeader>
 
-                        <CardContent>
+                        <CardContent className="space-y-6">
 
                             <h1 className="text-5xl font-bold">
 
@@ -197,7 +268,7 @@ ${item.improved}
 
                         </CardHeader>
 
-                        <CardContent className="flex flex-wrap gap-2">
+                        <CardContent className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
 
                             {
 
@@ -235,7 +306,7 @@ ${item.improved}
 
                         </CardHeader>
 
-                        <CardContent className="flex flex-wrap gap-2">
+                        <CardContent className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
 
                             {
 
@@ -277,7 +348,7 @@ ${item.improved}
 
     </CardHeader>
 
-    <CardContent className="flex flex-wrap gap-2">
+    <CardContent className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
 
         {
 
@@ -318,7 +389,7 @@ ${item.improved}
 
                         </CardHeader>
 
-                        <CardContent>
+                        <CardContent className="space-y-6">
 
                             <ul className="list-disc ml-5 space-y-2">
 
@@ -358,13 +429,23 @@ ${item.improved}
 
                     <Card>
 
-                       <CardHeader className="flex flex-row justify-between items-center">
+                       <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+    <div>
 
     <CardTitle>
 
         AI Improved Resume
 
     </CardTitle>
+
+    <p className="text-sm text-gray-500 mt-1">
+
+        {saveStatus}
+
+    </p>
+
+</div>
 
     <Button
     onClick={generateSuggestions}
@@ -385,13 +466,13 @@ ${item.improved}
 
 </CardHeader>
 
-                        <CardContent>
+                        <CardContent className="space-y-6">
 
                             {
 
     aiSuggestions.length > 0 && (
 
-        <div className="mt-8 space-y-5">
+        <div className="mt-8 space-y-5 max-h-[600px] overflow-y-auto pr-2">
 
             <h2 className="text-2xl font-bold">
 
@@ -405,7 +486,10 @@ ${item.improved}
 
                     (item,index)=>(
 
-                        <Card key={index}>
+                        <Card
+    key={index}
+    className="border-l-4 border-l-blue-500 shadow-md"
+>
 
                             <CardContent className="space-y-4 pt-6">
 
@@ -452,7 +536,9 @@ ${item.improved}
                                 </div>
 
                                 <Button
-    onClick={() => applySuggestion(item)}>
+    className="w-fit"
+    onClick={() => applySuggestion(item)}
+>
         Apply Suggestion
     </Button>
 
@@ -472,15 +558,48 @@ ${item.improved}
 
 }
 
-                            <Textarea
+                      <Textarea
     value={resume}
     onChange={(e) => {
 
-        setResume(e.target.value)
-        setHasGeneratedSuggestions(false)
+    const value = e.target.value
 
-    }}
-    rows={35}
+    setResume(value)
+
+    setHasGeneratedSuggestions(false)
+
+    setSaveStatus("Typing...")
+
+    if (saveTimeout) {
+
+        clearTimeout(saveTimeout)
+
+    }
+
+    const timeout = setTimeout(() => {
+
+        autoSaveResume(value)
+
+    }, 1000)
+
+    setSaveTimeout(timeout)
+
+}}
+
+    className="
+    h-[950px]
+    w-full
+    resize-none
+    overflow-y-auto
+    rounded-xl
+    border
+    bg-white
+    font-mono
+    text-[15px]
+    leading-7
+    p-6
+    shadow-inner
+"
 />
 
                         </CardContent>
